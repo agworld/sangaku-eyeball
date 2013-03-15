@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.date = "2013-03-15"
   s.description = "Sangaku Eyeball uses Gosu, a 2D Game Library, to display lines, polygons and so on as defined by the Sangaku gem. It allows you to draw arbitrary polygons and then locate the Pole of Inaccessibility (usually the best place to display a label) using a fast, iterative algorithm."
   s.email = "jason.hutchens@agworld.com.au"
-  s.executables = ["sangaku-eyeball.rb"]
+  s.executables = ["sangaku-eyeball"]
   s.extra_rdoc_files = [
     "LICENSE.txt",
     "README.md"
@@ -26,14 +26,13 @@ Gem::Specification.new do |s|
     "README.md",
     "Rakefile",
     "VERSION",
-    "bin/sangaku-eyeball.rb",
+    "bin/sangaku-eyeball",
     "lib/sangaku-eyeball.rb",
     "lib/sangaku-eyeball/assets/cursor.png",
     "lib/sangaku-eyeball/assets/target.png",
     "lib/sangaku-eyeball/drawable.rb",
     "sangaku-eyeball.gemspec",
-    "test/helper.rb",
-    "test/test_sangaku-eyeball.rb"
+    "spec/spec_helper.rb"
   ]
   s.homepage = "http://github.com/agworld/sangaku-eyeball"
   s.licenses = ["MIT"]

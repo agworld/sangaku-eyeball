@@ -1,8 +1,7 @@
 #!/usr/bin/env ruby
 
-require 'logger'
-require 'rubygems'
-Bundler.require(:default, :development)
+require 'gosu'
+require 'sangaku'
 
 PATH = File.join(File.dirname(__FILE__), '..', 'lib', 'sangaku-eyeball')
 
