@@ -31,6 +31,7 @@ Gem::Specification.new do |s|
     "lib/sangaku-eyeball/assets/cursor.png",
     "lib/sangaku-eyeball/assets/target.png",
     "lib/sangaku-eyeball/drawable.rb",
+    "sangaku-eyeball.gemspec",
     "test/helper.rb",
     "test/test_sangaku-eyeball.rb"
   ]
