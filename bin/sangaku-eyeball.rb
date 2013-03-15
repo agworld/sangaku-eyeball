@@ -1,0 +1,153 @@
+#!/usr/bin/env ruby
+
+require 'logger'
+require 'rubygems'
+Bundler.require(:default, :development)
+
+PATH = File.join(File.dirname(__FILE__), '..', 'lib', 'sangaku-eyeball')
+
+require File.join(PATH, 'drawable')
+
+class GameWindow < Gosu::Window
+
+  def initialize
+    super 800, 600, false
+    self.caption = "The Sangaku Eyeball"
+    @cursor = Gosu::Image.new(self, File.join(PATH, 'assets', 'cursor.png'), true)
+    @target = Gosu::Image.new(self, File.join(PATH, 'assets', 'target.png'), true)
+    @poly = Sangaku::Polygon.new
+    @line = Sangaku::Line.new([0, 0], [0, 0])
+    @mouse = Sangaku::Point.new(0, 0)
+    @aabb = nil
+    @grid = nil
+    @stars = nil
+    @state = :waiting
+    @running = false
+    @smooth = false
+  end
+
+  def update
+    @mouse.x = mouse_x
+    @mouse.y = mouse_y
+    @line.p1 = @poly.points.last
+    @line.p2 = @mouse
+    if @running
+      _step
+      if @aabb.w < 8
+        @running = false
+        @state = :waiting
+      end
+    end
+  end
+
+  def button_down(id)
+    case id
+      when Gosu::KbEscape
+        if @state != :drawing
+          if @poly.length == 0
+            close
+          else
+            _clear
+          end
+        end
+      when Gosu::MsLeft
+        if @state == :waiting && @poly.length == 0
+          @state = :drawing
+        end
+        if @state == :drawing
+          @poly << @mouse
+        end
+      when Gosu::MsRight
+        if @state == :drawing
+          _commit
+        end
+      when Gosu::KbRight
+        if @poly.length > 2
+          if @state == :waiting
+            @state = :gridify
+          end
+          if @state != :drawing
+            _step
+          end
+        end
+      when Gosu::KbSpace
+        if @poly.length > 2 && @state == :waiting
+          @state = :gridify
+        end
+        if @state != :waiting && @state != :drawing
+          @running = !@running
+        end
+    end
+  end
+
+  def draw
+    @poly.draw(self)
+    @line.draw(self) if @state == :drawing
+    if @poly.closed?
+      @aabb.draw(self)
+      @aabb.mid.draw(@target, [-16, -16]) if @state != :fittest
+      @grid.draw(self) unless @grid.nil? || @state != :pointify
+      @stars.each { |s| s.draw(self) } unless @stars.nil? || @state != :fittest
+    end
+    @mouse.draw(@cursor, [-8, -8])
+  end
+
+  private
+
+  def _step
+    case @state
+      when :gridify
+        @grid = @aabb.to_grid(13)
+        @state = :pointify
+      when :pointify
+        @stars = @grid.get_stars(@poly)
+        @state = :fittest
+      when :fittest
+        @aabb.centre!(@stars.sort.first.center)
+        @state = :iterate
+      when :iterate
+        @stars = nil
+        @aabb *= 0.71
+        @state = :gridify
+    end
+  end
+
+  def _clear
+    @poly.clear!
+    @aabb = nil
+    @state = :waiting
+    @running = false
+    @grid = nil
+    @smooth = false
+  end
+
+  def _commit
+    @poly.close!
+    @aabb = @poly.aabb
+    @aabb.square!
+    @aabb *= 1.1
+    @state = :waiting
+  end
+
+  def _smooth(points)
+    retval = []
+    while points.length > 0
+      point = points.shift
+      retval.pop if _colinear?(retval[-2], retval[-1], point)
+      retval << point
+    end
+    retval
+  end
+
+  def _colinear?(p1, p2, p3)
+    return false if p1.nil? || p2.nil? || p3.nil?
+    l1 = Sangaku::Line.new(p1, p2)
+    l2 = Sangaku::Line.new(p1, p3)
+    l3 = Sangaku::Line.new(p2, p3)
+    0.5*(l1.dot(l2)+l2.dot(l3)).abs > 0.9
+  end
+
+end
+
+window = GameWindow.new
+window.show
